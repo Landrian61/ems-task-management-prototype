@@ -29,11 +29,14 @@ import {
   MoreHorizontal,
   Edit,
   Trash2,
-  Eye
+  Eye,
+  FolderOpen
 } from 'lucide-react';
 import CreateProjectForm from './CreateProjectForm';
+import { Drawer, DrawerContent } from '../ui/drawer';
+import ProjectDetailDrawer from './ProjectDetailDrawer';
 
-const ProjectList = () => {
+const ProjectList = ({ setActiveRoute }) => {
   const { hasPermission } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -257,7 +260,7 @@ const ProjectList = () => {
 
                 {/* Actions */}
                 <div className="flex items-center space-x-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => setActiveRoute(`project-detail:${project.id}`)}>
                     <Eye className="mr-2 h-3 w-3" />
                     View
                   </Button>
