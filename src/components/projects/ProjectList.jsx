@@ -33,8 +33,6 @@ import {
   FolderOpen
 } from 'lucide-react';
 import CreateProjectForm from './CreateProjectForm';
-import { Drawer, DrawerContent } from '../ui/drawer';
-import ProjectDetailDrawer from './ProjectDetailDrawer';
 
 const ProjectList = ({ setActiveRoute }) => {
   const { hasPermission } = useAuth();

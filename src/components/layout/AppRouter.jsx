@@ -7,16 +7,21 @@ import TimeTracker from '../time-tracking/TimeTracker';
 import Reports from '../reports/Reports';
 import UserManagement from '../admin/UserManagement';
 import Settings from '../settings/Settings';
+import ProjectDetailPage from '../projects/ProjectDetailPage';
 
 const AppRouter = ({ activeRoute, setActiveRoute }) => {
   const { hasPermission } = useAuth();
 
   const renderComponent = () => {
+    if (activeRoute && activeRoute.startsWith('project-detail:')) {
+      const id = activeRoute.split(':')[1];
+      return <ProjectDetailPage projectId={id} setActiveRoute={setActiveRoute} />;
+    }
     switch (activeRoute) {
       case 'dashboard':
         return <Dashboard />;
       case 'projects':
-        return <ProjectList />;
+        return <ProjectList setActiveRoute={setActiveRoute} />;
       case 'tasks':
         return <TaskList />;
       case 'time-tracking':
