@@ -24,6 +24,8 @@ import {
   Line
 } from 'recharts';
 import { CheckSquare, Clock, Users, TrendingUp, AlertTriangle, Calendar, Timer, Target, Play, Pause, Square } from 'lucide-react';
+import CreateTaskForm from '@/components/tasks/CreateTaskForm';
+import CreateProjectForm from '@/components/projects/CreateProjectForm';
 
 const Dashboard = () => {
   // Mock user data
@@ -619,165 +621,36 @@ const Dashboard = () => {
       </Card>
 
       {/* New Task Modal */}
-      <Dialog open={isNewTaskOpen} onOpenChange={setIsNewTaskOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleTaskSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Task Title</Label>
-              <Input
-                id="title"
-                value={taskForm.title}
-                onChange={(e) => setTaskForm(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter task title"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={taskForm.description}
-                onChange={(e) => setTaskForm(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter task description"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Priority</Label>
-                <Select
-                  value={taskForm.priority}
-                  onValueChange={(value) => setTaskForm(prev => ({ ...prev, priority: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select
-                  value={taskForm.status}
-                  onValueChange={(value) => setTaskForm(prev => ({ ...prev, status: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todo">To Do</SelectItem>
-                    <SelectItem value="inProgress">In Progress</SelectItem>
-                    <SelectItem value="review">Review</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Project</Label>
-              <Select
-                value={taskForm.projectId}
-                onValueChange={(value) => setTaskForm(prev => ({ ...prev, projectId: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map(project => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date</Label>
-              <Input
-                id="dueDate"
-                type="date"
-                value={taskForm.dueDate}
-                onChange={(e) => setTaskForm(prev => ({ ...prev, dueDate: e.target.value }))}
-              />
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsNewTaskOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">Create Task</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {isNewTaskOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsNewTaskOpen(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <CreateTaskForm onClose={() => setIsNewTaskOpen(false)} />
+          </div>
+        </div>
+      )}
 
       {/* New Project Modal */}
-      <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Create New Project</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleProjectSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Project Name</Label>
-              <Input
-                id="name"
-                value={projectForm.name}
-                onChange={(e) => setProjectForm(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter project name"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={projectForm.description}
-                onChange={(e) => setProjectForm(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter project description"
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={projectForm.status}
-                onValueChange={(value) => setProjectForm(prev => ({ ...prev, status: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="on-hold">On Hold</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsNewProjectOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">Create Project</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {isNewProjectOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsNewProjectOpen(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <CreateProjectForm onClose={() => setIsNewProjectOpen(false)} />
+          </div>
+        </div>
+      )}
 
       {/* Time Report Modal */}
       <Dialog open={isTimeReportOpen} onOpenChange={setIsTimeReportOpen}>
