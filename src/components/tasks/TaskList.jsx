@@ -38,12 +38,15 @@ import {
   TrendingUp,
   Target,
 } from "lucide-react"
+import ViewTaskDetails from "./TaskDetails"
 
-const EnhancedTaskViews = () => {
+const EnhancedTaskViews = ({ setActiveRoute }) => {
   const [view, setView] = useState("cards")
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [priorityFilter, setPriorityFilter] = useState("all")
+  const [selectedTask, setSelectedTask] = useState(null)
+  const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false)
 
   // Mock task data
   const tasks = [
@@ -249,18 +252,9 @@ const EnhancedTaskViews = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setActiveRoute && setActiveRoute(`task-detail:${task.id}`)}>
                       <Eye className="mr-2 h-4 w-4" />
                       View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit Task
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Task
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

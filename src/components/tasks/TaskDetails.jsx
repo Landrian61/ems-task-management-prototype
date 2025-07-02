@@ -31,6 +31,7 @@ import {
   FileText,
   Send,
 } from "lucide-react"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 
 const ViewTaskDetails = ({ task, isOpen, onClose, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false)
@@ -212,46 +213,31 @@ const ViewTaskDetails = ({ task, isOpen, onClose, onUpdate }) => {
   const daysUntilDeadline = getDaysUntilDeadline(task.deadline)
   const progressPercentage = getProgressPercentage(task)
 
+  // Always render as full page
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2">
-                {getPriorityIcon(task.priority)}
-                <DialogTitle className="text-xl font-semibold">{task.title}</DialogTitle>
-                <Badge className={getStatusColor(task.status)}>{task.status.replace("-", " ")}</Badge>
-                <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
-              </div>
-              <p className="text-sm text-gray-600">
-                Created on {new Date(task.createdAt).toLocaleDateString()} • Last updated{" "}
-                {new Date(task.updatedAt).toLocaleDateString()}
-              </p>
+    <div className="p-8 max-w-4xl mx-auto space-y-8">
+      {/* Header Card */}
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between gap-4 border-b">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-2">
+              {getPriorityIcon(task.priority)}
+              <CardTitle className="text-2xl font-bold">{task.title}</CardTitle>
+              <Badge className={getStatusColor(task.status)}>{task.status.replace("-", " ")}</Badge>
+              <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-                className="flex items-center space-x-1"
-              >
-                {isEditing ? <X className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
-                <span>{isEditing ? "Cancel" : "Edit"}</span>
-              </Button>
-              {isEditing && (
-                <Button size="sm" onClick={handleSave} className="flex items-center space-x-1">
-                  <Save className="h-4 w-4" />
-                  <span>Save</span>
-                </Button>
-              )}
-            </div>
+            <CardDescription>
+              Created on {new Date(task.createdAt).toLocaleDateString()} • Last updated {new Date(task.updatedAt).toLocaleDateString()}
+            </CardDescription>
           </div>
-        </DialogHeader>
+        </CardHeader>
+      </Card>
 
-        <div className="flex-1 overflow-hidden">
+      {/* Main Content Card */}
+      <Card>
+        <CardContent className="py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-4 flex-shrink-0">
+            <TabsList className="grid w-full grid-cols-4 mb-6">
               <TabsTrigger value="overview" className="flex items-center space-x-2">
                 <FileText className="h-4 w-4" />
                 <span>Overview</span>
@@ -270,201 +256,221 @@ const ViewTaskDetails = ({ task, isOpen, onClose, onUpdate }) => {
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex-1 overflow-y-auto mt-4">
+            <div className="flex-1 overflow-y-auto mt-0">
               <TabsContent value="overview" className="space-y-6 mt-0">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Main Details */}
                   <div className="lg:col-span-2 space-y-6">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3">Description</h3>
-                      {isEditing ? (
-                        <Textarea
-                          value={editedTask.description}
-                          onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
-                          className="min-h-[100px]"
-                          placeholder="Task description..."
-                        />
-                      ) : (
-                        <p className="text-gray-700 leading-relaxed">{task.description}</p>
-                      )}
-                    </div>
+                    <Card className="shadow-none border bg-gray-50">
+                      <CardHeader>
+                        <CardTitle>Description</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {isEditing ? (
+                          <Textarea
+                            value={editedTask.description}
+                            onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
+                            className="min-h-[100px]"
+                            placeholder="Task description..."
+                          />
+                        ) : (
+                          <p className="text-gray-700 leading-relaxed">{task.description}</p>
+                        )}
+                      </CardContent>
+                    </Card>
 
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3">Progress</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span>Time Tracked</span>
-                          <span className="font-medium">
-                            {task.trackedHours}h / {task.estimatedHours}h ({Math.round(progressPercentage)}%)
-                          </span>
+                    <Card className="shadow-none border bg-gray-50">
+                      <CardHeader>
+                        <CardTitle>Progress</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="flex justify-between text-sm">
+                            <span>Time Tracked</span>
+                            <span className="font-medium">
+                              {task.trackedHours}h / {task.estimatedHours}h ({Math.round(progressPercentage)}%)
+                            </span>
+                          </div>
+                          <Progress value={progressPercentage} className="h-3" />
+                          <div className="text-xs text-gray-500">
+                            {task.estimatedHours - task.trackedHours > 0
+                              ? `${task.estimatedHours - task.trackedHours}h remaining`
+                              : "Time exceeded"}
+                          </div>
                         </div>
-                        <Progress value={progressPercentage} className="h-3" />
-                        <div className="text-xs text-gray-500">
-                          {task.estimatedHours - task.trackedHours > 0
-                            ? `${task.estimatedHours - task.trackedHours}h remaining`
-                            : "Time exceeded"}
-                        </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
 
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3">Tags</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {task.tags.map((tag, index) => (
-                          <Badge key={index} variant="outline" className="flex items-center space-x-1">
-                            <Tag className="h-3 w-3" />
-                            <span>{tag}</span>
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+                    <Card className="shadow-none border bg-gray-50">
+                      <CardHeader>
+                        <CardTitle>Tags</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {task.tags.map((tag, index) => (
+                            <Badge key={index} variant="outline" className="flex items-center space-x-1">
+                              <Tag className="h-3 w-3" />
+                              <span>{tag}</span>
+                            </Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
 
                   {/* Sidebar */}
                   <div className="space-y-6">
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Status</label>
-                        {isEditing ? (
-                          <Select
-                            value={editedTask.status}
-                            onValueChange={(value) => setEditedTask({ ...editedTask, status: value })}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="todo">To Do</SelectItem>
-                              <SelectItem value="in-progress">In Progress</SelectItem>
-                              <SelectItem value="review">Review</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                              <SelectItem value="blocked">Blocked</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <div className="flex items-center space-x-2 mt-1">
-                            {getStatusIcon(task.status)}
-                            <Badge className={getStatusColor(task.status)}>{task.status.replace("-", " ")}</Badge>
-                          </div>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Priority</label>
-                        {isEditing ? (
-                          <Select
-                            value={editedTask.priority}
-                            onValueChange={(value) => setEditedTask({ ...editedTask, priority: value })}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="low">Low</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="high">High</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <div className="flex items-center space-x-2 mt-1">
-                            {getPriorityIcon(task.priority)}
-                            <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
-                          </div>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Assignee</label>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs">
-                              {task.assignee
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm">{task.assignee}</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Project</label>
-                        <p className="text-sm mt-1">{task.project}</p>
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Deadline</label>
-                        {isEditing ? (
-                          <Input
-                            type="date"
-                            value={editedTask.deadline}
-                            onChange={(e) => setEditedTask({ ...editedTask, deadline: e.target.value })}
-                            className="mt-1"
-                          />
-                        ) : (
-                          <div className="mt-1">
-                            <div className="flex items-center space-x-2">
-                              <Calendar className="h-4 w-4 text-gray-500" />
-                              <span className="text-sm">{new Date(task.deadline).toLocaleDateString()}</span>
-                            </div>
-                            <div
-                              className={`text-xs mt-1 ${
-                                daysUntilDeadline < 3
-                                  ? "text-red-600"
-                                  : daysUntilDeadline < 7
-                                    ? "text-yellow-600"
-                                    : "text-gray-600"
-                              }`}
+                    <Card className="shadow-none border bg-gray-50">
+                      <CardHeader>
+                        <CardTitle>Details</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Status</label>
+                          {isEditing ? (
+                            <Select
+                              value={editedTask.status}
+                              onValueChange={(value) => setEditedTask({ ...editedTask, status: value })}
                             >
-                              {daysUntilDeadline > 0 ? `${daysUntilDeadline} days remaining` : "Overdue"}
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="todo">To Do</SelectItem>
+                                <SelectItem value="in-progress">In Progress</SelectItem>
+                                <SelectItem value="review">Review</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
+                                <SelectItem value="blocked">Blocked</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div className="flex items-center space-x-2 mt-1">
+                              {getStatusIcon(task.status)}
+                              <Badge className={getStatusColor(task.status)}>{task.status.replace("-", " ")}</Badge>
                             </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Priority</label>
+                          {isEditing ? (
+                            <Select
+                              value={editedTask.priority}
+                              onValueChange={(value) => setEditedTask({ ...editedTask, priority: value })}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="low">Low</SelectItem>
+                                <SelectItem value="medium">Medium</SelectItem>
+                                <SelectItem value="high">High</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div className="flex items-center space-x-2 mt-1">
+                              {getPriorityIcon(task.priority)}
+                              <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Assignee</label>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Avatar className="h-6 w-6">
+                              <AvatarFallback className="text-xs">
+                                {task.assignee
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm">{task.assignee}</span>
                           </div>
-                        )}
-                      </div>
-                    </div>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Project</label>
+                          <p className="text-sm mt-1">{task.project}</p>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-gray-600">Deadline</label>
+                          {isEditing ? (
+                            <Input
+                              type="date"
+                              value={editedTask.deadline}
+                              onChange={(e) => setEditedTask({ ...editedTask, deadline: e.target.value })}
+                              className="mt-1"
+                            />
+                          ) : (
+                            <div className="mt-1">
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-4 w-4 text-gray-500" />
+                                <span className="text-sm">{new Date(task.deadline).toLocaleDateString()}</span>
+                              </div>
+                              <div
+                                className={`text-xs mt-1 ${
+                                  daysUntilDeadline < 3
+                                    ? "text-red-600"
+                                    : daysUntilDeadline < 7
+                                      ? "text-yellow-600"
+                                      : "text-gray-600"
+                                }`}
+                              >
+                                {daysUntilDeadline > 0 ? `${daysUntilDeadline} days remaining` : "Overdue"}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="comments" className="space-y-4 mt-0">
-                {/* Add Comment */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-sm">You</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-3">
-                      <Textarea
-                        placeholder="Add a comment..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        className="min-h-[80px]"
-                      />
-                      <div className="flex justify-end">
-                        <Button size="sm" onClick={handleAddComment} disabled={!newComment.trim()}>
-                          <Send className="h-4 w-4 mr-2" />
-                          Comment
-                        </Button>
+                <Card className="shadow-none border bg-gray-50">
+                  <CardHeader>
+                    <CardTitle>Add Comment</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex space-x-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="text-sm">You</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 space-y-3">
+                        <Textarea
+                          placeholder="Add a comment..."
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          className="min-h-[80px]"
+                        />
+                        <div className="flex justify-end">
+                          <Button size="sm" onClick={handleAddComment} disabled={!newComment.trim()}>
+                            <Send className="h-4 w-4 mr-2" />
+                            Comment
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
 
-                {/* Comments List */}
-                <div className="space-y-4">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="flex space-x-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-sm">
-                          {comment.author
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="bg-white border rounded-lg p-3">
+                {comments.map((comment) => (
+                  <Card key={comment.id} className="shadow-none border bg-white">
+                    <CardContent>
+                      <div className="flex space-x-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="text-sm">
+                            {comment.author
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
                           <div className="flex items-center justify-between mb-2">
                             <span className="font-medium text-sm">{comment.author}</span>
                             <div className="flex items-center space-x-2 text-xs text-gray-500">
@@ -475,73 +481,83 @@ const ViewTaskDetails = ({ task, isOpen, onClose, onUpdate }) => {
                           <p className="text-sm text-gray-700">{comment.content}</p>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </TabsContent>
 
               <TabsContent value="attachments" className="space-y-4 mt-0">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Attachments ({attachments.length})</h3>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add File
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {attachments.map((attachment) => (
-                    <div key={attachment.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Paperclip className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-sm">{attachment.name}</h4>
-                            <p className="text-xs text-gray-500">{attachment.size}</p>
-                            <p className="text-xs text-gray-500">
-                              Uploaded by {attachment.uploadedBy} on{" "}
-                              {new Date(attachment.uploadedAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
+                <Card className="shadow-none border bg-gray-50">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Attachments ({attachments.length})</CardTitle>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add File
+                    </Button>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {attachments.map((attachment) => (
+                        <Card key={attachment.id} className="shadow-none border bg-white">
+                          <CardContent>
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                  <Paperclip className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <div>
+                                  <h4 className="font-medium text-sm">{attachment.name}</h4>
+                                  <p className="text-xs text-gray-500">{attachment.size}</p>
+                                  <p className="text-xs text-gray-500">
+                                    Uploaded by {attachment.uploadedBy} on {new Date(attachment.uploadedAt).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button variant="ghost" size="sm">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="activity" className="space-y-4 mt-0">
-                <h3 className="text-lg font-semibold">Activity Timeline</h3>
-                <div className="space-y-4">
-                  {activities.map((activity, index) => (
-                    <div key={activity.id} className="flex space-x-3">
-                      <div className="flex flex-col items-center">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <User className="h-4 w-4 text-blue-600" />
+                <Card className="shadow-none border bg-gray-50">
+                  <CardHeader>
+                    <CardTitle>Activity Timeline</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {activities.map((activity, index) => (
+                        <div key={activity.id} className="flex space-x-3">
+                          <div className="flex flex-col items-center">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <User className="h-4 w-4 text-blue-600" />
+                            </div>
+                            {index !== activities.length - 1 && <div className="w-0.5 h-8 bg-gray-200 mt-2"></div>}
+                          </div>
+                          <div className="flex-1 pb-4">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium text-sm">{activity.author}</span>
+                              <span className="text-sm text-gray-600">{activity.description}</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">{formatTimestamp(activity.timestamp)}</p>
+                          </div>
                         </div>
-                        {index !== activities.length - 1 && <div className="w-0.5 h-8 bg-gray-200 mt-2"></div>}
-                      </div>
-                      <div className="flex-1 pb-4">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium text-sm">{activity.author}</span>
-                          <span className="text-sm text-gray-600">{activity.description}</span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">{formatTimestamp(activity.timestamp)}</p>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
             </div>
           </Tabs>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
