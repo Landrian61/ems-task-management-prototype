@@ -28,6 +28,7 @@ import CreateTaskForm from '@/components/tasks/CreateTaskForm';
 import CreateProjectForm from '@/components/projects/CreateProjectForm';
 import TimeReport from '@/components/tasks/TimeReport';
 import Analytics from '@/components/tasks/Analytics';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 
 const Dashboard = () => {
   // Mock user data
@@ -622,52 +623,34 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* New Task Modal */}
-      {isNewTaskOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              onClick={() => setIsNewTaskOpen(false)}
-              aria-label="Close"
-            >
-              ×
-            </button>
-            <CreateTaskForm onClose={() => setIsNewTaskOpen(false)} />
-          </div>
-        </div>
-      )}
+      {/* New Task Drawer */}
+      <Drawer open={isNewTaskOpen} onOpenChange={setIsNewTaskOpen} direction="right">
+        <DrawerContent className="w-full max-w-2xl">
+          <CreateTaskForm onClose={() => setIsNewTaskOpen(false)} />
+        </DrawerContent>
+      </Drawer>
 
-      {/* New Project Modal */}
-      {isNewProjectOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              onClick={() => setIsNewProjectOpen(false)}
-              aria-label="Close"
-            >
-              ×
-            </button>
-            <CreateProjectForm onClose={() => setIsNewProjectOpen(false)} />
-          </div>
-        </div>
-      )}
+      {/* New Project Drawer */}
+      <Drawer open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen} direction="right">
+        <DrawerContent className="w-full max-w-2xl">
+          <CreateProjectForm onClose={() => setIsNewProjectOpen(false)} />
+        </DrawerContent>
+      </Drawer>
 
-      {/* Time Report Modal */}
-      {isTimeReportOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+      {/* Time Report Drawer */}
+      <Drawer open={isTimeReportOpen} onOpenChange={setIsTimeReportOpen} direction="right">
+        <DrawerContent className="w-full max-w-2xl">
           <TimeReport
             todayTime={todayTime}
             workloadData={workloadData.map(day => ({ ...day, hours: Math.random() * 8 + 2 }))}
             onClose={() => setIsTimeReportOpen(false)}
           />
-        </div>
-      )}
+        </DrawerContent>
+      </Drawer>
 
-      {/* Analytics Modal */}
-      {isAnalyticsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+      {/* Analytics Drawer */}
+      <Drawer open={isAnalyticsOpen} onOpenChange={setIsAnalyticsOpen} direction="right">
+        <DrawerContent className="w-full max-w-3xl">
           <Analytics
             tasks={tasks}
             projects={projects}
@@ -677,8 +660,8 @@ const Dashboard = () => {
             projectTaskData={projectTaskData}
             onClose={() => setIsAnalyticsOpen(false)}
           />
-        </div>
-      )}
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };
