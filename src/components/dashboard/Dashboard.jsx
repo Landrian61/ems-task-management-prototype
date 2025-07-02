@@ -26,6 +26,8 @@ import {
 import { CheckSquare, Clock, Users, TrendingUp, AlertTriangle, Calendar, Timer, Target, Play, Pause, Square } from 'lucide-react';
 import CreateTaskForm from '@/components/tasks/CreateTaskForm';
 import CreateProjectForm from '@/components/projects/CreateProjectForm';
+import TimeReport from '@/components/tasks/TimeReport';
+import Analytics from '@/components/tasks/Analytics';
 
 const Dashboard = () => {
   // Mock user data
@@ -653,191 +655,30 @@ const Dashboard = () => {
       )}
 
       {/* Time Report Modal */}
-      <Dialog open={isTimeReportOpen} onOpenChange={setIsTimeReportOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Time Report</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            {/* Time Stats */}
-            <div className="grid grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Clock className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-2xl font-bold">{todayTime}</p>
-                  <p className="text-sm text-gray-600">Today</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Calendar className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                  <p className="text-2xl font-bold">32h 15m</p>
-                  <p className="text-sm text-gray-600">This Week</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <TrendingUp className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-                  <p className="text-2xl font-bold">4h 36m</p>
-                  <p className="text-sm text-gray-600">Daily Average</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Weekly Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Weekly Time Distribution</CardTitle>
-                <CardDescription>Hours tracked each day this week</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={workloadData.map(day => ({ ...day, hours: Math.random() * 8 + 2 }))}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="hours" fill="#3b82f6" name="Hours" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {isTimeReportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <TimeReport
+            todayTime={todayTime}
+            workloadData={workloadData.map(day => ({ ...day, hours: Math.random() * 8 + 2 }))}
+            onClose={() => setIsTimeReportOpen(false)}
+          />
+        </div>
+      )}
 
       {/* Analytics Modal */}
-      <Dialog open={isAnalyticsOpen} onOpenChange={setIsAnalyticsOpen}>
-        <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Analytics Dashboard</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            {/* Key Metrics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <CheckSquare className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-2xl font-bold">{tasks.length}</p>
-                  <p className="text-sm text-gray-600">Total Tasks</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Users className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                  <p className="text-2xl font-bold">{projects.length}</p>
-                  <p className="text-sm text-gray-600">Active Projects</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <TrendingUp className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-                  <p className="text-2xl font-bold">{completionRate}%</p>
-                  <p className="text-sm text-gray-600">Completion Rate</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Clock className="h-8 w-8 mx-auto mb-2 text-orange-600" />
-                  <p className="text-2xl font-bold">{taskStats.active}</p>
-                  <p className="text-sm text-gray-600">Active Tasks</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Priority Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Task Priority Distribution</CardTitle>
-                  <CardDescription>Breakdown of tasks by priority level</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={priorityData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          paddingAngle={5}
-                          dataKey="value"
-                        >
-                          {priorityData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Project Tasks */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tasks by Project</CardTitle>
-                  <CardDescription>Task distribution across projects</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={projectTaskData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="tasks" fill="#3b82f6" name="Total Tasks" />
-                        <Bar dataKey="completed" fill="#10b981" name="Completed" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Task Status Breakdown */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Task Status Overview</CardTitle>
-                <CardDescription>Current status of all tasks in the system</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-red-50 rounded-lg">
-                    <p className="text-2xl font-bold text-red-600">{taskStats.todo}</p>
-                    <p className="text-sm text-red-700">To Do</p>
-                  </div>
-                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                    <p className="text-2xl font-bold text-yellow-600">{taskStats.inProgress}</p>
-                    <p className="text-sm text-yellow-700">In Progress</p>
-                  </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <p className="text-2xl font-bold text-blue-600">{taskStats.review}</p>
-                    <p className="text-sm text-blue-700">Review</p>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">{taskStats.completed}</p>
-                    <p className="text-sm text-green-700">Completed</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {isAnalyticsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <Analytics
+            tasks={tasks}
+            projects={projects}
+            completionRate={completionRate}
+            taskStats={taskStats}
+            priorityData={priorityData}
+            projectTaskData={projectTaskData}
+            onClose={() => setIsAnalyticsOpen(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };
