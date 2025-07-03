@@ -36,6 +36,14 @@ const KanbanBoard = ({ tasks, onTaskClick }) => {
       borderColor: "border-yellow-200",
     },
     {
+      id: "review",
+      title: "REVIEW",
+      color: "bg-purple-50",
+      headerColor: "bg-purple-500",
+      textColor: "text-white",
+      borderColor: "border-purple-200",
+    },
+    {
       id: "completed",
       title: "COMPLETED",
       color: "bg-green-50",
