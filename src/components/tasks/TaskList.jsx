@@ -1,49 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Plus,
-  Search,
-  Calendar,
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  Eye,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  Play,
-  MessageSquare,
-  Paperclip,
-  Flag,
-  Grid3X3,
-  BarChart3,
-  CalendarDays,
-  Layout,
-  TrendingUp,
-  Target,
-} from "lucide-react"
+import { Plus, Search, Eye, Clock, AlertTriangle, CheckCircle, Play, Flag, Target, Filter, SortAsc } from "lucide-react"
+
 import ViewTaskDetails from "./TaskDetails"
+import KanbanBoard from "./KanbanBoard"
 
 const EnhancedTaskViews = ({ setActiveRoute }) => {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [priorityFilter, setPriorityFilter] = useState("all")
+  const [sortBy, setSortBy] = useState("deadline")
   const [selectedTask, setSelectedTask] = useState(null)
   const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false)
 
@@ -153,8 +123,24 @@ const EnhancedTaskViews = ({ setActiveRoute }) => {
       task.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
     const matchesStatus = statusFilter === "all" || task.status === statusFilter
     const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter
-
     return matchesSearch && matchesStatus && matchesPriority
+  })
+
+  // Sort tasks
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    switch (sortBy) {
+      case "deadline":
+        return new Date(a.deadline) - new Date(b.deadline)
+      case "priority":
+        const priorityOrder = { high: 3, medium: 2, low: 1 }
+        return priorityOrder[b.priority] - priorityOrder[a.priority]
+      case "title":
+        return a.title.localeCompare(b.title)
+      case "assignee":
+        return a.assignee.localeCompare(b.assignee)
+      default:
+        return 0
+    }
   })
 
   const getStatusColor = (status) => {
@@ -229,168 +215,98 @@ const EnhancedTaskViews = ({ setActiveRoute }) => {
     return task.estimatedHours > 0 ? Math.min((task.trackedHours / task.estimatedHours) * 100, 100) : 0
   }
 
-  // Card Grid View Component
-  const CardGridView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredTasks.map((task) => {
-        const daysUntilDeadline = getDaysUntilDeadline(task.deadline)
-        const progressPercentage = getProgressPercentage(task)
-
-        return (
-          <Card key={task.id} className="hover:shadow-lg transition-shadow duration-200 border-l-4 border-l-blue-500">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-2">
-                  {getPriorityIcon(task.priority)}
-                  <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setActiveRoute && setActiveRoute(`task-detail:${task.id}`)}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      View Details
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <CardTitle className="text-lg leading-tight">{task.title}</CardTitle>
-              <CardDescription className="line-clamp-2">{task.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  {getStatusIcon(task.status)}
-                  <Badge className={getStatusColor(task.status)}>{task.status.replace("-", " ")}</Badge>
-                </div>
-                <span className="text-sm text-gray-500">{task.project}</span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">
-                      {task.assignee
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm text-gray-600">{task.assignee}</span>
-                </div>
-                <div
-                  className={`text-sm ${
-                    daysUntilDeadline < 3 ? "text-red-600" : daysUntilDeadline < 7 ? "text-yellow-600" : "text-gray-600"
-                  }`}
-                >
-                  <Calendar className="h-3 w-3 inline mr-1" />
-                  {daysUntilDeadline > 0 ? `${daysUntilDeadline}d` : "Overdue"}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Progress</span>
-                  <span className="font-medium">
-                    {task.trackedHours}h / {task.estimatedHours}h
-                  </span>
-                </div>
-                <Progress value={progressPercentage} className="h-2" />
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t">
-                <div className="flex space-x-4 text-xs text-gray-500">
-                  {task.comments > 0 && (
-                    <div className="flex items-center space-x-1">
-                      <MessageSquare className="h-3 w-3" />
-                      <span>{task.comments}</span>
-                    </div>
-                  )}
-                  {task.attachments > 0 && (
-                    <div className="flex items-center space-x-1">
-                      <Paperclip className="h-3 w-3" />
-                      <span>{task.attachments}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {task.tags.slice(0, 2).map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )
-      })}
-    </div>
-  )
-
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Task Management</h1>
-          <p className="text-gray-600 mt-1">Manage and track all your tasks with multiple view options</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header - Aligned with Kanban boards */}
+      <div className="bg-gray-50 px-6 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Task Management</h1>
+            <p className="text-gray-600 mt-1">
+              {sortedTasks.length} tasks • {sortedTasks.filter((t) => t.status === "completed").length} completed
+            </p>
+          </div>
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Task
+          </Button>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New Task
-        </Button>
+
+        {/* Filters and Search */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-64 bg-white"
+              />
+            </div>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-40 bg-white">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="todo">To Do</SelectItem>
+                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="review">Review</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="blocked">Blocked</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-40 bg-white">
+                <Flag className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priority</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-40 bg-white">
+                <SortAsc className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="deadline">Deadline</SelectItem>
+                <SelectItem value="priority">Priority</SelectItem>
+                <SelectItem value="title">Title</SelectItem>
+                <SelectItem value="assignee">Assignee</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="todo">To Do</SelectItem>
-              <SelectItem value="in-progress">In Progress</SelectItem>
-              <SelectItem value="review">Review</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="blocked">Blocked</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Priority</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="low">Low</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Main Content */}
+      <div className="px-6 pb-6">
+        <KanbanBoard
+          tasks={sortedTasks}
+          onTaskClick={(task) => {
+            setSelectedTask(task)
+            setIsTaskDetailsOpen(true)
+          }}
+        />
       </div>
 
-      {/* Cards View Only */}
-      <CardGridView />
+      {/* Task Details Modal */}
+      <ViewTaskDetails task={selectedTask} isOpen={isTaskDetailsOpen} onClose={() => setIsTaskDetailsOpen(false)} />
 
       {/* Empty State */}
-      {filteredTasks.length === 0 && (
+      {sortedTasks.length === 0 && (
         <div className="text-center py-12">
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Target className="h-12 w-12 text-gray-400" />
@@ -401,7 +317,7 @@ const EnhancedTaskViews = ({ setActiveRoute }) => {
               ? "Try adjusting your search or filters"
               : "Get started by creating your first task"}
           </p>
-          <Button>
+          <Button className="bg-blue-600 hover:bg-blue-700">
             <Plus className="mr-2 h-4 w-4" />
             Create Task
           </Button>
