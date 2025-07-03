@@ -24,7 +24,7 @@ import {
   Line
 } from 'recharts';
 import { CheckSquare, Clock, Users, TrendingUp, AlertTriangle, Calendar, Timer, Target, Play, Pause, Square } from 'lucide-react';
-import CreateTaskForm from '@/components/tasks/CreateTaskForm';
+import CreateTaskForm from '@/components/tasks/CreateSubTaskForm';
 import CreateProjectForm from '@/components/projects/CreateProjectForm';
 import TimeReport from '@/components/tasks/TimeReport';
 import Analytics from '@/components/tasks/Analytics';
