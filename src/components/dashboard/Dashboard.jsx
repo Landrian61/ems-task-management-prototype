@@ -1,9 +1,14 @@
-import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { Progress } from '../ui/progress';
+"use client"
+
+import React, { useState, useEffect, useRef } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   BarChart,
   Bar,
@@ -18,26 +23,246 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import {
-  CheckSquare,
-  Clock,
-  Users,
-  TrendingUp,
-  AlertTriangle,
-  Calendar,
-  Timer,
-  Target
-} from 'lucide-react';
+import { CheckSquare, Clock, Users, TrendingUp, AlertTriangle, Calendar, Timer, Target, Play, Pause, Square } from 'lucide-react';
+import CreateTaskForm from '@/components/tasks/CreateTaskForm';
+import CreateProjectForm from '@/components/projects/CreateProjectForm';
+import TimeReport from '@/components/tasks/TimeReport';
+import Analytics from '@/components/tasks/Analytics';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 
 const Dashboard = () => {
-  const { user, hasPermission } = useAuth();
+  // Mock user data
+  const user = {
+    name: "John Doe",
+    role: "manager",
+    permissions: ["view_reports", "create_projects", "manage_team"]
+  };
 
-  // Mock data for charts
+  const hasPermission = (permission) => {
+    return user.permissions.includes(permission);
+  };
+
+  // State for modals
+  const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
+  const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
+  const [isTimeReportOpen, setIsTimeReportOpen] = useState(false);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
+
+  // Task and Project Management State
+  const [tasks, setTasks] = useState([
+    {
+      id: "1",
+      title: "Update user interface",
+      description: "Redesign the main dashboard",
+      status: "completed",
+      priority: "high",
+      projectId: "1",
+      assignee: "John Doe",
+      dueDate: "2024-01-15",
+      createdAt: "2024-01-10",
+      updatedAt: "2024-01-14"
+    },
+    {
+      id: "2",
+      title: "Database optimization",
+      description: "Improve query performance",
+      status: "inProgress",
+      priority: "medium",
+      projectId: "1",
+      assignee: "John Doe",
+      dueDate: "2024-01-20",
+      createdAt: "2024-01-12",
+      updatedAt: "2024-01-15"
+    },
+    {
+      id: "3",
+      title: "Mobile app testing",
+      description: "Test new features on mobile",
+      status: "review",
+      priority: "high",
+      projectId: "2",
+      assignee: "John Doe",
+      dueDate: "2024-01-18",
+      createdAt: "2024-01-13",
+      updatedAt: "2024-01-16"
+    }
+  ]);
+
+  const [projects, setProjects] = useState([
+    {
+      id: "1",
+      name: "Website Redesign",
+      description: "Complete overhaul of company website",
+      status: "active",
+      createdAt: "2024-01-01",
+      members: ["John Doe", "Jane Smith"]
+    },
+    {
+      id: "2",
+      name: "Mobile App",
+      description: "New mobile application development",
+      status: "active",
+      createdAt: "2024-01-05",
+      members: ["John Doe", "Bob Johnson"]
+    }
+  ]);
+
+  // Time Tracking State
+  const [isTracking, setIsTracking] = useState(false);
+  const [currentTime, setCurrentTime] = useState("00:00:00");
+  const [todayTime, setTodayTime] = useState("0h 0m");
+  const [startTime, setStartTime] = useState(null);
+  const [totalSeconds, setTotalSeconds] = useState(0);
+  const intervalRef = useRef(null);
+
+  // Form states
+  const [taskForm, setTaskForm] = useState({
+    title: "",
+    description: "",
+    status: "todo",
+    priority: "medium",
+    projectId: "",
+    assignee: "John Doe",
+    dueDate: ""
+  });
+
+  const [projectForm, setProjectForm] = useState({
+    name: "",
+    description: "",
+    status: "active",
+    members: ["John Doe"]
+  });
+
+  // Time tracking effect
+  useEffect(() => {
+    if (isTracking && startTime) {
+      intervalRef.current = setInterval(() => {
+        const now = new Date();
+        const diff = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+        const hours = Math.floor(diff / 3600);
+        const minutes = Math.floor((diff % 3600) / 60);
+        const seconds = diff % 60;
+
+        setCurrentTime(
+          `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+        );
+      }, 1000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isTracking, startTime]);
+
+  // Update today's total time
+  useEffect(() => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    setTodayTime(`${hours}h ${minutes}m`);
+  }, [totalSeconds]);
+
+  // Time tracking functions
+  const startTimer = () => {
+    setStartTime(new Date());
+    setIsTracking(true);
+  };
+
+  const pauseTimer = () => {
+    if (startTime) {
+      const now = new Date();
+      const sessionSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+      setTotalSeconds(prev => prev + sessionSeconds);
+    }
+    setIsTracking(false);
+    setCurrentTime("00:00:00");
+  };
+
+  const stopTimer = () => {
+    if (startTime) {
+      const now = new Date();
+      const sessionSeconds = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+      setTotalSeconds(prev => prev + sessionSeconds);
+    }
+    setIsTracking(false);
+    setCurrentTime("00:00:00");
+    setStartTime(null);
+  };
+
+  // Task management functions
+  const addTask = (taskData) => {
+    const newTask = {
+      ...taskData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    setTasks(prev => [...prev, newTask]);
+  };
+
+  const addProject = (projectData) => {
+    const newProject = {
+      ...projectData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    setProjects(prev => [...prev, newProject]);
+  };
+
+  const handleTaskSubmit = (e) => {
+    e.preventDefault();
+    if (!taskForm.title.trim()) return;
+
+    addTask(taskForm);
+    setTaskForm({
+      title: "",
+      description: "",
+      status: "todo",
+      priority: "medium",
+      projectId: "",
+      assignee: "John Doe",
+      dueDate: ""
+    });
+    setIsNewTaskOpen(false);
+  };
+
+  const handleProjectSubmit = (e) => {
+    e.preventDefault();
+    if (!projectForm.name.trim()) return;
+
+    addProject(projectForm);
+    setProjectForm({
+      name: "",
+      description: "",
+      status: "active",
+      members: ["John Doe"]
+    });
+    setIsNewProjectOpen(false);
+  };
+
+  // Calculate stats
+  const getTaskStats = () => {
+    return {
+      todo: tasks.filter(t => t.status === 'todo').length,
+      inProgress: tasks.filter(t => t.status === 'inProgress').length,
+      review: tasks.filter(t => t.status === 'review').length,
+      completed: tasks.filter(t => t.status === 'completed').length,
+      active: tasks.filter(t => t.status !== 'completed').length
+    };
+  };
+
+  const taskStats = getTaskStats();
+
   const taskStatusData = [
-    { name: 'To Do', value: 12, color: '#ef4444' },
-    { name: 'In Progress', value: 8, color: '#f59e0b' },
-    { name: 'Review', value: 5, color: '#3b82f6' },
-    { name: 'Completed', value: 25, color: '#10b981' }
+    { name: 'To Do', value: taskStats.todo, color: '#ef4444' },
+    { name: 'In Progress', value: taskStats.inProgress, color: '#f59e0b' },
+    { name: 'Review', value: taskStats.review, color: '#3b82f6' },
+    { name: 'Completed', value: taskStats.completed, color: '#10b981' }
   ];
 
   const workloadData = [
@@ -59,12 +284,23 @@ const Dashboard = () => {
     { month: 'Jun', efficiency: 96 }
   ];
 
-  // Role-specific dashboard content
+  const priorityData = [
+    { name: 'High', value: tasks.filter(t => t.priority === 'high').length, color: '#ef4444' },
+    { name: 'Medium', value: tasks.filter(t => t.priority === 'medium').length, color: '#f59e0b' },
+    { name: 'Low', value: tasks.filter(t => t.priority === 'low').length, color: '#10b981' }
+  ];
+
+  const projectTaskData = projects.map(project => ({
+    name: project.name,
+    tasks: tasks.filter(t => t.projectId === project.id).length,
+    completed: tasks.filter(t => t.projectId === project.id && t.status === 'completed').length
+  }));
+
   const getStatsCards = () => {
     const baseStats = [
       {
         title: 'Active Tasks',
-        value: '12',
+        value: taskStats.active.toString(),
         description: 'Tasks assigned to you',
         icon: CheckSquare,
         color: 'text-blue-600',
@@ -72,7 +308,7 @@ const Dashboard = () => {
       },
       {
         title: 'Time Today',
-        value: '6h 24m',
+        value: todayTime,
         description: 'Time tracked today',
         icon: Timer,
         color: 'text-green-600',
@@ -84,7 +320,7 @@ const Dashboard = () => {
       baseStats.push(
         {
           title: 'Team Tasks',
-          value: '48',
+          value: tasks.length.toString(),
           description: 'Total team tasks',
           icon: Users,
           color: 'text-purple-600',
@@ -92,7 +328,7 @@ const Dashboard = () => {
         },
         {
           title: 'Completion Rate',
-          value: '94%',
+          value: `${Math.round((taskStats.completed / tasks.length) * 100) || 0}%`,
           description: 'This month',
           icon: Target,
           color: 'text-orange-600',
@@ -106,8 +342,17 @@ const Dashboard = () => {
 
   const statsCards = getStatsCards();
 
+  const recentActivities = tasks.slice(-4).reverse().map(task => ({
+    action: task.status === 'completed' ? 'Task completed' : 'Task updated',
+    task: task.title,
+    time: new Date(task.updatedAt).toLocaleString(),
+    type: task.status === 'completed' ? 'success' : 'info'
+  }));
+
+  const completionRate = tasks.length > 0 ? Math.round((taskStats.completed / tasks.length) * 100) : 0;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Welcome Section */}
       <div className="flex items-center justify-between">
         <div>
@@ -122,6 +367,25 @@ const Dashboard = () => {
           <Badge variant="outline" className="capitalize">
             {user?.role}
           </Badge>
+          <div className="flex items-center space-x-2">
+            {isTracking ? (
+              <Button onClick={pauseTimer} variant="outline" size="sm">
+                <Pause className="mr-2 h-4 w-4" />
+                Pause ({currentTime})
+              </Button>
+            ) : (
+              <Button onClick={startTimer} variant="outline" size="sm">
+                <Play className="mr-2 h-4 w-4" />
+                Start Timer
+              </Button>
+            )}
+            {isTracking && (
+              <Button onClick={stopTimer} variant="outline" size="sm">
+                <Square className="mr-2 h-4 w-4" />
+                Stop
+              </Button>
+            )}
+          </div>
           <Button>
             <Calendar className="mr-2 h-4 w-4" />
             Schedule
@@ -134,7 +398,7 @@ const Dashboard = () => {
         {statsCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index}>
+            <Card key={index} className="hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -221,51 +485,30 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                {
-                  action: 'Task completed',
-                  task: 'Update user interface',
-                  time: '2 hours ago',
-                  type: 'success'
-                },
-                {
-                  action: 'Task assigned',
-                  task: 'Database optimization',
-                  time: '4 hours ago',
-                  type: 'info'
-                },
-                {
-                  action: 'Deadline approaching',
-                  task: 'Mobile app testing',
-                  time: '6 hours ago',
-                  type: 'warning'
-                },
-                {
-                  action: 'Comment added',
-                  task: 'API documentation',
-                  time: '1 day ago',
-                  type: 'info'
-                }
-              ].map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.type === 'success' ? 'bg-green-500' :
-                    activity.type === 'warning' ? 'bg-yellow-500' :
-                    'bg-blue-500'
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900">
-                      <span className="font-medium">{activity.action}</span>
-                    </p>
-                    <p className="text-sm text-gray-600 truncate">
-                      {activity.task}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {activity.time}
-                    </p>
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      activity.type === 'success' ? 'bg-green-500' :
+                      activity.type === 'warning' ? 'bg-yellow-500' :
+                      'bg-blue-500'
+                    }`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900">
+                        <span className="font-medium">{activity.action}</span>
+                      </p>
+                      <p className="text-sm text-gray-600 truncate">
+                        {activity.task}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {activity.time}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">No recent activity</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -337,22 +580,41 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col">
+            <Button 
+              variant="outline" 
+              className="h-20 flex-col hover:bg-blue-50 hover:border-blue-200 bg-transparent"
+              onClick={() => setIsNewTaskOpen(true)}
+            >
               <CheckSquare className="h-6 w-6 mb-2" />
               <span className="text-sm">New Task</span>
             </Button>
+
             {hasPermission('create_projects') && (
-              <Button variant="outline" className="h-20 flex-col">
+              <Button 
+                variant="outline" 
+                className="h-20 flex-col hover:bg-purple-50 hover:border-purple-200 bg-transparent"
+                onClick={() => setIsNewProjectOpen(true)}
+              >
                 <Users className="h-6 w-6 mb-2" />
                 <span className="text-sm">New Project</span>
               </Button>
             )}
-            <Button variant="outline" className="h-20 flex-col">
+
+            <Button 
+              variant="outline" 
+              className="h-20 flex-col hover:bg-green-50 hover:border-green-200 bg-transparent"
+              onClick={() => setIsTimeReportOpen(true)}
+            >
               <Clock className="h-6 w-6 mb-2" />
               <span className="text-sm">Time Report</span>
             </Button>
+
             {hasPermission('view_reports') && (
-              <Button variant="outline" className="h-20 flex-col">
+              <Button 
+                variant="outline" 
+                className="h-20 flex-col hover:bg-orange-50 hover:border-orange-200 bg-transparent"
+                onClick={() => setIsAnalyticsOpen(true)}
+              >
                 <TrendingUp className="h-6 w-6 mb-2" />
                 <span className="text-sm">Analytics</span>
               </Button>
@@ -360,9 +622,48 @@ const Dashboard = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* New Task Drawer */}
+      <Drawer open={isNewTaskOpen} onOpenChange={setIsNewTaskOpen} direction="right">
+        <DrawerContent className="w-full max-w-2xl">
+          <CreateTaskForm onClose={() => setIsNewTaskOpen(false)} />
+        </DrawerContent>
+      </Drawer>
+
+      {/* New Project Drawer */}
+      <Drawer open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen} direction="right">
+        <DrawerContent className="w-full max-w-2xl">
+          <CreateProjectForm onClose={() => setIsNewProjectOpen(false)} />
+        </DrawerContent>
+      </Drawer>
+
+      {/* Time Report Drawer */}
+      <Drawer open={isTimeReportOpen} onOpenChange={setIsTimeReportOpen} direction="right">
+        <DrawerContent className="w-full max-w-2xl">
+          <TimeReport
+            todayTime={todayTime}
+            workloadData={workloadData.map(day => ({ ...day, hours: Math.random() * 8 + 2 }))}
+            onClose={() => setIsTimeReportOpen(false)}
+          />
+        </DrawerContent>
+      </Drawer>
+
+      {/* Analytics Drawer */}
+      <Drawer open={isAnalyticsOpen} onOpenChange={setIsAnalyticsOpen} direction="right">
+        <DrawerContent className="w-full max-w-3xl">
+          <Analytics
+            tasks={tasks}
+            projects={projects}
+            completionRate={completionRate}
+            taskStats={taskStats}
+            priorityData={priorityData}
+            projectTaskData={projectTaskData}
+            onClose={() => setIsAnalyticsOpen(false)}
+          />
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };
 
 export default Dashboard;
-

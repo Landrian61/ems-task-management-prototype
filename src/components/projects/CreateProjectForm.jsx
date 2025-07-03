@@ -135,170 +135,182 @@ const CreateProjectForm = ({ onClose }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Project Name */}
-      <div className="space-y-2">
-        <Label htmlFor="name">Project Name *</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => handleInputChange('name', e.target.value)}
-          placeholder="Enter project name"
-          className={errors.name ? 'border-red-500' : ''}
-        />
-        {errors.name && (
-          <p className="text-sm text-red-600">{errors.name}</p>
-        )}
+    <div className="h-full flex flex-col">
+      <div className="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-6 py-4">
+        <h2 className="text-xl font-bold">New Project</h2>
+        <button
+          className="text-gray-500 hover:text-gray-700 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <X className="h-6 w-6" />
+        </button>
       </div>
-
-      {/* Project Description */}
-      <div className="space-y-2">
-        <Label htmlFor="description">Project Description *</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Describe the project goals and objectives"
-          rows={4}
-          className={errors.description ? 'border-red-500' : ''}
-        />
-        {errors.description && (
-          <p className="text-sm text-red-600">{errors.description}</p>
-        )}
-      </div>
-
-      {/* Deadline and Priority */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Deadline */}
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Project Name */}
         <div className="space-y-2">
-          <Label>Project Deadline *</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !formData.deadline && "text-muted-foreground",
-                  errors.deadline && "border-red-500"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.deadline ? format(formData.deadline, "PPP") : "Pick a date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={formData.deadline}
-                onSelect={(date) => handleInputChange('deadline', date)}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          {errors.deadline && (
-            <p className="text-sm text-red-600">{errors.deadline}</p>
+          <Label htmlFor="name">Project Name *</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => handleInputChange('name', e.target.value)}
+            placeholder="Enter project name"
+            className={errors.name ? 'border-red-500' : ''}
+          />
+          {errors.name && (
+            <p className="text-sm text-red-600">{errors.name}</p>
           )}
         </div>
 
-        {/* Priority */}
+        {/* Project Description */}
         <div className="space-y-2">
-          <Label>Priority *</Label>
-          <Select value={formData.priority} onValueChange={(value) => handleInputChange('priority', value)}>
-            <SelectTrigger className={errors.priority ? 'border-red-500' : ''}>
-              <SelectValue placeholder="Select priority" />
+          <Label htmlFor="description">Project Description *</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            placeholder="Describe the project goals and objectives"
+            rows={4}
+            className={errors.description ? 'border-red-500' : ''}
+          />
+          {errors.description && (
+            <p className="text-sm text-red-600">{errors.description}</p>
+          )}
+        </div>
+
+        {/* Deadline and Priority */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Deadline */}
+          <div className="space-y-2">
+            <Label>Project Deadline *</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !formData.deadline && "text-muted-foreground",
+                    errors.deadline && "border-red-500"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.deadline ? format(formData.deadline, "PPP") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={formData.deadline}
+                  onSelect={(date) => handleInputChange('deadline', date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            {errors.deadline && (
+              <p className="text-sm text-red-600">{errors.deadline}</p>
+            )}
+          </div>
+
+          {/* Priority */}
+          <div className="space-y-2">
+            <Label>Priority *</Label>
+            <Select value={formData.priority} onValueChange={(value) => handleInputChange('priority', value)}>
+              <SelectTrigger className={errors.priority ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.priority && (
+              <p className="text-sm text-red-600">{errors.priority}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Project Goals */}
+        <div className="space-y-2">
+          <Label htmlFor="goals">Project Goals & Objectives</Label>
+          <Textarea
+            id="goals"
+            value={formData.goals}
+            onChange={(e) => handleInputChange('goals', e.target.value)}
+            placeholder="List the main goals and objectives for this project"
+            rows={3}
+          />
+        </div>
+
+        {/* Team Members */}
+        <div className="space-y-2">
+          <Label>Team Members *</Label>
+          
+          {/* Selected Members */}
+          {formData.members.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {formData.members.map((member) => (
+                <Badge key={member.id} variant="secondary" className="flex items-center gap-1">
+                  {member.name}
+                  <button
+                    type="button"
+                    onClick={() => removeMember(member.id)}
+                    className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Add Members */}
+          <Select onValueChange={(value) => {
+            const user = availableUsers.find(u => u.id === parseInt(value));
+            if (user) addMember(user);
+          }}>
+            <SelectTrigger className={errors.members ? 'border-red-500' : ''}>
+              <Users className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Add team members" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="low">Low</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="high">High</SelectItem>
+              {availableUsers
+                .filter(user => !formData.members.find(member => member.id === user.id))
+                .map((user) => (
+                  <SelectItem key={user.id} value={user.id.toString()}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{user.name}</span>
+                      <span className="text-sm text-gray-500">{user.role} • {user.email}</span>
+                    </div>
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
-          {errors.priority && (
-            <p className="text-sm text-red-600">{errors.priority}</p>
+          
+          {errors.members && (
+            <p className="text-sm text-red-600">{errors.members}</p>
           )}
         </div>
-      </div>
 
-      {/* Project Goals */}
-      <div className="space-y-2">
-        <Label htmlFor="goals">Project Goals & Objectives</Label>
-        <Textarea
-          id="goals"
-          value={formData.goals}
-          onChange={(e) => handleInputChange('goals', e.target.value)}
-          placeholder="List the main goals and objectives for this project"
-          rows={3}
-        />
-      </div>
-
-      {/* Team Members */}
-      <div className="space-y-2">
-        <Label>Team Members *</Label>
-        
-        {/* Selected Members */}
-        {formData.members.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {formData.members.map((member) => (
-              <Badge key={member.id} variant="secondary" className="flex items-center gap-1">
-                {member.name}
-                <button
-                  type="button"
-                  onClick={() => removeMember(member.id)}
-                  className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Add Members */}
-        <Select onValueChange={(value) => {
-          const user = availableUsers.find(u => u.id === parseInt(value));
-          if (user) addMember(user);
-        }}>
-          <SelectTrigger className={errors.members ? 'border-red-500' : ''}>
-            <Users className="mr-2 h-4 w-4" />
-            <SelectValue placeholder="Add team members" />
-          </SelectTrigger>
-          <SelectContent>
-            {availableUsers
-              .filter(user => !formData.members.find(member => member.id === user.id))
-              .map((user) => (
-                <SelectItem key={user.id} value={user.id.toString()}>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{user.name}</span>
-                    <span className="text-sm text-gray-500">{user.role} • {user.email}</span>
-                  </div>
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
-        
-        {errors.members && (
-          <p className="text-sm text-red-600">{errors.members}</p>
-        )}
-      </div>
-
-      {/* Form Actions */}
-      <div className="flex items-center justify-end space-x-3 pt-4 border-t">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onClose}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Creating...' : 'Create Project'}
-        </Button>
-      </div>
-    </form>
+        {/* Form Actions */}
+        <div className="flex items-center justify-end space-x-3 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating...' : 'Create Project'}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 
