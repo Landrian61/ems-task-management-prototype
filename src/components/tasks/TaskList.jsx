@@ -226,10 +226,7 @@ const EnhancedTaskViews = ({ setActiveRoute }) => {
               {sortedTasks.length} tasks • {sortedTasks.filter((t) => t.status === "completed").length} completed
             </p>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Task
-          </Button>
+         
         </div>
 
         {/* Filters and Search */}
