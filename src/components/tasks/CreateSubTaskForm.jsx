@@ -1,278 +1,240 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
-import { Calendar } from '../ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../ui/popover';
-import { Badge } from '../ui/badge';
-import { cn } from '../../lib/utils';
-import { format } from 'date-fns';
-import {
-  CalendarIcon,
-  X,
-  Plus,
-  Users,
-  Tag,
-  Clock,
-  Flag
-} from 'lucide-react';
+"use client"
+
+import { useState } from "react"
+import { Button } from "../ui/button"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
+import { Textarea } from "../ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { Calendar } from "../ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
+import { Badge } from "../ui/badge"
+import { cn } from "../../lib/utils"
+import { format } from "date-fns"
+import { CalendarIcon, X, Plus, Tag, Clock, Flag, Users } from "lucide-react"
 
 const CreateSubTaskForm = ({ onClose, parentTask = null }) => {
-  const { user, hasPermission } = useAuth();
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    project: '',
-    assignee: '',
+    title: "",
+    description: "",
+    assignee: "",
     deadline: null,
-    priority: '',
-    estimatedHours: '',
+    priority: "",
+    estimatedHours: "",
     tags: [],
-    parentTaskId: parentTask?.id || null
-  });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [newTag, setNewTag] = useState('');
+    parentTaskId: parentTask?.id || null,
+  })
 
-  // Mock data
-  const projects = [
-    { id: 1, name: 'Mobile App Redesign' },
-    { id: 2, name: 'Database Migration' },
-    { id: 3, name: 'API Documentation' },
-    { id: 4, name: 'Security Audit' }
-  ];
-
-  const users = [
-    { id: 1, name: 'John Doe', email: 'john.doe@company.com', role: 'Developer' },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@company.com', role: 'Designer' },
-    { id: 3, name: 'Alice Johnson', email: 'alice.johnson@company.com', role: 'QA Engineer' },
-    { id: 4, name: 'Bob Wilson', email: 'bob.wilson@company.com', role: 'DevOps' },
-    { id: 5, name: 'Carol Brown', email: 'carol.brown@company.com', role: 'Product Manager' }
-  ];
+  const [errors, setErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [newTag, setNewTag] = useState("")
 
   const commonTags = [
-    'Frontend', 'Backend', 'UI/UX', 'Database', 'API', 'Testing', 
-    'Documentation', 'Security', 'Mobile', 'Performance', 'Bug Fix', 'Feature'
-  ];
+    "Frontend",
+    "Backend",
+    "UI/UX",
+    "Database",
+    "API",
+    "Testing",
+    "Documentation",
+    "Security",
+    "Mobile",
+    "Performance",
+    "Bug Fix",
+    "Feature",
+  ]
+
+  const users = [
+    { id: 1, name: "John Doe", email: "john.doe@company.com", role: "Developer" },
+    { id: 2, name: "Jane Smith", email: "jane.smith@company.com", role: "Designer" },
+    { id: 3, name: "Alice Johnson", email: "alice.johnson@company.com", role: "QA Engineer" },
+    { id: 4, name: "Bob Wilson", email: "bob.wilson@company.com", role: "DevOps" },
+    { id: 5, name: "Carol Brown", email: "carol.brown@company.com", role: "Product Manager" },
+  ]
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
-    }));
-    
+      [field]: value,
+    }))
+
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ''
-      }));
+        [field]: "",
+      }))
     }
-  };
+  }
 
   const addTag = (tag) => {
     if (tag && !formData.tags.includes(tag)) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, tag]
-      }));
+        tags: [...prev.tags, tag],
+      }))
     }
-    setNewTag('');
-  };
+    setNewTag("")
+  }
 
   const removeTag = (tagToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
-  };
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }))
+  }
 
   const handleAddCustomTag = () => {
     if (newTag.trim()) {
-      addTag(newTag.trim());
+      addTag(newTag.trim())
     }
-  };
+  }
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors = {}
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Task title is required';
+      newErrors.title = "Subtask title is required"
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'Task description is required';
+      newErrors.description = "Subtask description is required"
     }
 
     if (!formData.assignee) {
-      newErrors.assignee = 'Assignee is required';
+      newErrors.assignee = "Assignee is required"
     }
 
     if (!formData.deadline) {
-      newErrors.deadline = 'Deadline is required';
+      newErrors.deadline = "Deadline is required"
     } else if (formData.deadline < new Date()) {
-      newErrors.deadline = 'Deadline cannot be in the past';
+      newErrors.deadline = "Deadline cannot be in the past"
     }
 
     if (!formData.priority) {
-      newErrors.priority = 'Priority is required';
+      newErrors.priority = "Priority is required"
     }
 
     if (formData.estimatedHours && (isNaN(formData.estimatedHours) || formData.estimatedHours <= 0)) {
-      newErrors.estimatedHours = 'Estimated hours must be a positive number';
+      newErrors.estimatedHours = "Estimated hours must be a positive number"
     }
 
-    // Project is required for managers/admins
-    if (hasPermission('assign_tasks') && !formData.project) {
-      newErrors.project = 'Project is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setIsSubmitting(true);
-    
+    setIsSubmitting(true)
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
       const taskData = {
         ...formData,
         id: Date.now(), // Mock ID
-        status: 'todo',
+        status: "todo",
         trackedHours: 0,
         comments: 0,
         attachments: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        createdBy: user.id
-      };
-      
-      console.log('Creating task:', taskData);
-      
+      }
+
+      console.log("Creating subtask:", taskData)
+
       // Show success message (in real app, would use toast notification)
-      alert(parentTask ? 'Subtask created successfully!' : 'Task created successfully!');
-      
-      onClose();
+      alert("Subtask created successfully!")
+
+      onClose()
     } catch (error) {
-      console.error('Error creating task:', error);
-      alert('Error creating task. Please try again.');
+      console.error("Error creating subtask:", error)
+      alert("Error creating subtask. Please try again.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <div className="h-full flex flex-col">
-      <div className="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-6 py-4">
-        <h2 className="text-xl font-bold">{parentTask ? 'New Subtask' : 'New Task'}</h2>
+      <div className="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-8 py-6">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">Create New Subtask</h2>
+          <p className="text-slate-600 mt-1">Add a subtask to break down your main task</p>
+        </div>
         <button
-          className="text-gray-500 hover:text-gray-700 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="text-gray-500 hover:text-gray-700 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
           onClick={onClose}
           aria-label="Close"
         >
           <X className="h-6 w-6" />
         </button>
       </div>
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Parent Task Info (for subtasks) */}
-        {parentTask && (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>Creating subtask for:</strong> {parentTask.title}
-            </p>
-          </div>
-        )}
 
-        {/* Task Title */}
-        <div className="space-y-2">
-          <Label htmlFor="title">
-            {parentTask ? 'Subtask Title' : 'Task Title'} *
-          </Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => handleInputChange('title', e.target.value)}
-            placeholder={parentTask ? 'Enter subtask title' : 'Enter task title'}
-            className={errors.title ? 'border-red-500' : ''}
-          />
-          {errors.title && (
-            <p className="text-sm text-red-600">{errors.title}</p>
-          )}
-        </div>
-
-        {/* Task Description */}
-        <div className="space-y-2">
-          <Label htmlFor="description">Description *</Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
-            placeholder="Describe the task requirements and objectives"
-            rows={4}
-            className={errors.description ? 'border-red-500' : ''}
-          />
-          {errors.description && (
-            <p className="text-sm text-red-600">{errors.description}</p>
-          )}
-        </div>
-
-        {/* Project and Assignee */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Project (for managers/admins) */}
-          {hasPermission('assign_tasks') && (
-            <div className="space-y-2">
-              <Label>Project *</Label>
-              <Select value={formData.project} onValueChange={(value) => handleInputChange('project', value)}>
-                <SelectTrigger className={errors.project ? 'border-red-500' : ''}>
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id.toString()}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.project && (
-                <p className="text-sm text-red-600">{errors.project}</p>
-              )}
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+        <div className="p-8 space-y-8">
+          {/* Parent Task Info */}
+          {parentTask && (
+            <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                <div>
+                  <p className="text-sm font-medium text-blue-800 mb-1">Creating subtask for:</p>
+                  <p className="text-lg font-semibold text-blue-900">{parentTask.title}</p>
+                  <p className="text-sm text-blue-700 mt-1">{parentTask.description}</p>
+                </div>
+              </div>
             </div>
           )}
 
+          {/* Subtask Title */}
+          <div className="space-y-3">
+            <Label htmlFor="title" className="text-base font-semibold text-slate-900">
+              Subtask Title *
+            </Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => handleInputChange("title", e.target.value)}
+              placeholder="Enter a clear and specific subtask title"
+              className={`text-lg h-12 ${errors.title ? "border-red-500" : "border-slate-300"}`}
+            />
+            {errors.title && <p className="text-sm text-red-600 mt-1">{errors.title}</p>}
+          </div>
+
+          {/* Subtask Description */}
+          <div className="space-y-3">
+            <Label htmlFor="description" className="text-base font-semibold text-slate-900">
+              Description *
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleInputChange("description", e.target.value)}
+              placeholder="Describe what needs to be done for this subtask..."
+              rows={6}
+              className={`text-base resize-none ${errors.description ? "border-red-500" : "border-slate-300"}`}
+            />
+            {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
+          </div>
+
           {/* Assignee */}
-          <div className="space-y-2">
-            <Label>Assignee *</Label>
-            <Select value={formData.assignee} onValueChange={(value) => handleInputChange('assignee', value)}>
-              <SelectTrigger className={errors.assignee ? 'border-red-500' : ''}>
-                <Users className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Select assignee" />
+          <div className="space-y-3">
+            <Label className="text-base font-semibold text-slate-900">Assignee *</Label>
+            <Select value={formData.assignee} onValueChange={(value) => handleInputChange("assignee", value)}>
+              <SelectTrigger className={`h-12 text-base ${errors.assignee ? "border-red-500" : "border-slate-300"}`}>
+                <Users className="mr-3 h-5 w-5" />
+                <SelectValue placeholder="Select who will work on this subtask" />
               </SelectTrigger>
               <SelectContent>
                 {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id.toString()}>
+                  <SelectItem key={user.id} value={user.name}>
                     <div className="flex flex-col">
                       <span className="font-medium">{user.name}</span>
                       <span className="text-sm text-gray-500">{user.role}</span>
@@ -281,180 +243,189 @@ const CreateSubTaskForm = ({ onClose, parentTask = null }) => {
                 ))}
               </SelectContent>
             </Select>
-            {errors.assignee && (
-              <p className="text-sm text-red-600">{errors.assignee}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Deadline, Priority, and Estimated Hours */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Deadline */}
-          <div className="space-y-2">
-            <Label>Deadline *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !formData.deadline && "text-muted-foreground",
-                    errors.deadline && "border-red-500"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.deadline ? format(formData.deadline, "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={formData.deadline}
-                  onSelect={(date) => handleInputChange('deadline', date)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-            {errors.deadline && (
-              <p className="text-sm text-red-600">{errors.deadline}</p>
-            )}
+            {errors.assignee && <p className="text-sm text-red-600 mt-1">{errors.assignee}</p>}
           </div>
 
-          {/* Priority */}
-          <div className="space-y-2">
-            <Label>Priority *</Label>
-            <Select value={formData.priority} onValueChange={(value) => handleInputChange('priority', value)}>
-              <SelectTrigger className={errors.priority ? 'border-red-500' : ''}>
-                <Flag className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Select priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.priority && (
-              <p className="text-sm text-red-600">{errors.priority}</p>
-            )}
+          {/* Deadline and Priority Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Deadline */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-slate-900">Deadline *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal h-12 text-base",
+                      !formData.deadline && "text-muted-foreground",
+                      errors.deadline && "border-red-500",
+                    )}
+                  >
+                    <CalendarIcon className="mr-3 h-5 w-5" />
+                    {formData.deadline ? format(formData.deadline, "PPP") : "Select deadline date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.deadline}
+                    onSelect={(date) => handleInputChange("deadline", date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              {errors.deadline && <p className="text-sm text-red-600 mt-1">{errors.deadline}</p>}
+            </div>
+
+            {/* Priority */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold text-slate-900">Priority *</Label>
+              <Select value={formData.priority} onValueChange={(value) => handleInputChange("priority", value)}>
+                <SelectTrigger className={`h-12 text-base ${errors.priority ? "border-red-500" : "border-slate-300"}`}>
+                  <Flag className="mr-3 h-5 w-5" />
+                  <SelectValue placeholder="Select subtask priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      Low Priority
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="medium">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      Medium Priority
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="high">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      High Priority
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.priority && <p className="text-sm text-red-600 mt-1">{errors.priority}</p>}
+            </div>
           </div>
 
           {/* Estimated Hours */}
-          <div className="space-y-2">
-            <Label htmlFor="estimatedHours">Estimated Hours</Label>
+          <div className="space-y-3">
+            <Label htmlFor="estimatedHours" className="text-base font-semibold text-slate-900">
+              Estimated Hours
+            </Label>
             <div className="relative">
-              <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Clock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 id="estimatedHours"
                 type="number"
                 min="0"
                 step="0.5"
                 value={formData.estimatedHours}
-                onChange={(e) => handleInputChange('estimatedHours', e.target.value)}
+                onChange={(e) => handleInputChange("estimatedHours", e.target.value)}
                 placeholder="0"
-                className={`pl-10 ${errors.estimatedHours ? 'border-red-500' : ''}`}
+                className={`pl-12 h-12 text-base ${errors.estimatedHours ? "border-red-500" : "border-slate-300"}`}
               />
             </div>
-            {errors.estimatedHours && (
-              <p className="text-sm text-red-600">{errors.estimatedHours}</p>
-            )}
+            {errors.estimatedHours && <p className="text-sm text-red-600 mt-1">{errors.estimatedHours}</p>}
+            <p className="text-sm text-slate-500">Optional: Estimate how many hours this subtask will take</p>
           </div>
-        </div>
 
-        {/* Tags */}
-        <div className="space-y-2">
-          <Label>Tags</Label>
-          
-          {/* Selected Tags */}
-          {formData.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {formData.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => removeTag(tag)}
-                    className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          )}
+          {/* Tags Section */}
+          <div className="space-y-4">
+            <Label className="text-base font-semibold text-slate-900">Tags</Label>
 
-          {/* Common Tags */}
-          <div className="space-y-2">
-            <p className="text-sm text-gray-600">Common tags:</p>
-            <div className="flex flex-wrap gap-2">
-              {commonTags
-                .filter(tag => !formData.tags.includes(tag))
-                .slice(0, 8)
-                .map((tag) => (
-                  <Button
-                    key={tag}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addTag(tag)}
-                    className="text-xs"
-                  >
-                    <Plus className="mr-1 h-3 w-3" />
+            {/* Selected Tags */}
+            {formData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-lg border">
+                {formData.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="flex items-center gap-2 px-3 py-1 text-sm">
                     {tag}
-                  </Button>
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      className="ml-1 hover:bg-gray-300 rounded-full p-1 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
                 ))}
-            </div>
-          </div>
+              </div>
+            )}
 
-          {/* Custom Tag Input */}
-          <div className="flex items-center space-x-2">
-            <div className="relative flex-1">
-              <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Add custom tag"
-                className="pl-10"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddCustomTag();
-                  }
-                }}
-              />
+            {/* Common Tags */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-gray-700">Quick add tags:</p>
+              <div className="flex flex-wrap gap-2">
+                {commonTags
+                  .filter((tag) => !formData.tags.includes(tag))
+                  .map((tag) => (
+                    <Button
+                      key={tag}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addTag(tag)}
+                      className="text-sm hover:bg-blue-50 hover:border-blue-300"
+                    >
+                      <Plus className="mr-1 h-3 w-3" />
+                      {tag}
+                    </Button>
+                  ))}
+              </div>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleAddCustomTag}
-              disabled={!newTag.trim()}
-            >
-              Add
-            </Button>
+
+            {/* Custom Tag Input */}
+            <div className="flex items-center space-x-3">
+              <div className="relative flex-1">
+                <Tag className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="Add custom tag"
+                  className="pl-12 h-12 text-base"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      handleAddCustomTag()
+                    }
+                  }}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAddCustomTag}
+                disabled={!newTag.trim()}
+                className="h-12 px-6 bg-transparent"
+              >
+                Add Tag
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Form Actions */}
-        <div className="flex items-center justify-end space-x-3 pt-4 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Creating...' : parentTask ? 'Create Subtask' : 'Create Task'}
-          </Button>
+        <div className="sticky bottom-0 bg-white border-t px-8 py-6">
+          <div className="flex items-center justify-end space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-8 py-3 bg-transparent"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-blue-600 hover:bg-blue-700">
+              {isSubmitting ? "Creating Subtask..." : "Create Subtask"}
+            </Button>
+          </div>
         </div>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default CreateSubTaskForm;
-
+export default CreateSubTaskForm
