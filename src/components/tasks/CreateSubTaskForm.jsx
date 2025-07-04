@@ -11,23 +11,27 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { Badge } from "../ui/badge"
 import { cn } from "../../lib/utils"
 import { format } from "date-fns"
-import { CalendarIcon, X, Plus, Tag, Clock, Flag } from "lucide-react"
+import { CalendarIcon, X, Plus, Tag, Clock, Flag, Users } from "lucide-react"
 
-const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
-  const [formData, setFormData] = useState(task ? {
-    title: task.title || "",
-    description: task.description || "",
-    deadline: task.deadline ? new Date(task.deadline) : null,
-    priority: task.priority || "",
-    estimatedHours: task.estimatedHours || "",
-    tags: task.tags || [],
+const CreateSubTaskForm = ({ onClose, parentTask = null, subtask = null, onUpdate }) => {
+  const [formData, setFormData] = useState(subtask ? {
+    title: subtask.title || "",
+    description: subtask.description || "",
+    assignee: subtask.assignee || "",
+    deadline: subtask.deadline ? new Date(subtask.deadline) : null,
+    priority: subtask.priority || "",
+    estimatedHours: subtask.estimatedHours || "",
+    tags: subtask.tags || [],
+    parentTaskId: subtask.parentTaskId || parentTask?.id || null,
   } : {
     title: "",
     description: "",
+    assignee: "",
     deadline: null,
     priority: "",
     estimatedHours: "",
     tags: [],
+    parentTaskId: parentTask?.id || null,
   })
 
   const [errors, setErrors] = useState({})
@@ -47,6 +51,14 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
     "Performance",
     "Bug Fix",
     "Feature",
+  ]
+
+  const users = [
+    { id: 1, name: "John Doe", email: "john.doe@company.com", role: "Developer" },
+    { id: 2, name: "Jane Smith", email: "jane.smith@company.com", role: "Designer" },
+    { id: 3, name: "Alice Johnson", email: "alice.johnson@company.com", role: "QA Engineer" },
+    { id: 4, name: "Bob Wilson", email: "bob.wilson@company.com", role: "DevOps" },
+    { id: 5, name: "Carol Brown", email: "carol.brown@company.com", role: "Product Manager" },
   ]
 
   const handleInputChange = (field, value) => {
@@ -91,11 +103,15 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
     const newErrors = {}
 
     if (!formData.title.trim()) {
-      newErrors.title = "Task title is required"
+      newErrors.title = "Subtask title is required"
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = "Task description is required"
+      newErrors.description = "Subtask description is required"
+    }
+
+    if (!formData.assignee) {
+      newErrors.assignee = "Assignee is required"
     }
 
     if (!formData.deadline) {
@@ -123,16 +139,16 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
     }
     setIsSubmitting(true)
     try {
-      if (task) {
+      if (subtask) {
         // Edit mode
-        const updatedTask = {
-          ...task,
+        const updatedSubtask = {
+          ...subtask,
           ...formData,
           deadline: formData.deadline,
           updatedAt: new Date().toISOString(),
         }
-        onUpdate && onUpdate(updatedTask)
-        alert("Task updated successfully!")
+        onUpdate && onUpdate(updatedSubtask)
+        alert("Subtask updated successfully!")
       } else {
         // Create mode
         const taskData = {
@@ -140,17 +156,16 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
           id: Date.now(),
           status: "todo",
           trackedHours: 0,
-          projectId: Number.parseInt(projectId),
-          subtasks: [],
+          comments: 0,
+          attachments: 0,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
-        console.log("Creating task:", taskData)
-        alert("Task created successfully!")
+        alert("Subtask created successfully!")
       }
       onClose()
     } catch (error) {
-      alert(task ? "Error updating task. Please try again." : "Error creating task. Please try again.")
+      alert(subtask ? "Error updating subtask. Please try again." : "Error creating subtask. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -160,8 +175,8 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
     <div className="h-full flex flex-col">
       <div className="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-8 py-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">{task ? "Edit Task" : "Create New Task"}</h2>
-          <p className="text-slate-600 mt-1">{task ? "Update the details for this task" : "Add a new task to your project"}</p>
+          <h2 className="text-2xl font-bold text-slate-900">{subtask ? "Edit Subtask" : "Create New Subtask"}</h2>
+          <p className="text-slate-600 mt-1">{subtask ? "Update the details for this subtask" : "Add a subtask to break down your main task"}</p>
         </div>
         <button
           className="text-gray-500 hover:text-gray-700 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
@@ -174,22 +189,36 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
 
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
         <div className="p-8 space-y-8">
-          {/* Task Title */}
+          {/* Parent Task Info */}
+          {parentTask && (
+            <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                <div>
+                  <p className="text-sm font-medium text-blue-800 mb-1">Creating subtask for:</p>
+                  <p className="text-lg font-semibold text-blue-900">{parentTask.title}</p>
+                  <p className="text-sm text-blue-700 mt-1">{parentTask.description}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Subtask Title */}
           <div className="space-y-3">
             <Label htmlFor="title" className="text-base font-semibold text-slate-900">
-              Task Title *
+              Subtask Title *
             </Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
-              placeholder="Enter a clear and descriptive task title"
+              placeholder="Enter a clear and specific subtask title"
               className={`text-lg h-12 ${errors.title ? "border-red-500" : "border-slate-300"}`}
             />
             {errors.title && <p className="text-sm text-red-600 mt-1">{errors.title}</p>}
           </div>
 
-          {/* Task Description */}
+          {/* Subtask Description */}
           <div className="space-y-3">
             <Label htmlFor="description" className="text-base font-semibold text-slate-900">
               Description *
@@ -198,11 +227,33 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
               id="description"
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
-              placeholder="Describe the task requirements, objectives, and any important details..."
+              placeholder="Describe what needs to be done for this subtask..."
               rows={6}
               className={`text-base resize-none ${errors.description ? "border-red-500" : "border-slate-300"}`}
             />
             {errors.description && <p className="text-sm text-red-600 mt-1">{errors.description}</p>}
+          </div>
+
+          {/* Assignee */}
+          <div className="space-y-3">
+            <Label className="text-base font-semibold text-slate-900">Assignee *</Label>
+            <Select value={formData.assignee} onValueChange={(value) => handleInputChange("assignee", value)}>
+              <SelectTrigger className={`h-12 text-base ${errors.assignee ? "border-red-500" : "border-slate-300"}`}>
+                <Users className="mr-3 h-5 w-5" />
+                <SelectValue placeholder="Select who will work on this subtask" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.name}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{user.name}</span>
+                      <span className="text-sm text-gray-500">{user.role}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.assignee && <p className="text-sm text-red-600 mt-1">{errors.assignee}</p>}
           </div>
 
           {/* Deadline and Priority Row */}
@@ -242,7 +293,7 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
               <Select value={formData.priority} onValueChange={(value) => handleInputChange("priority", value)}>
                 <SelectTrigger className={`h-12 text-base ${errors.priority ? "border-red-500" : "border-slate-300"}`}>
                   <Flag className="mr-3 h-5 w-5" />
-                  <SelectValue placeholder="Select task priority" />
+                  <SelectValue placeholder="Select subtask priority" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">
@@ -288,7 +339,7 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
               />
             </div>
             {errors.estimatedHours && <p className="text-sm text-red-600 mt-1">{errors.estimatedHours}</p>}
-            <p className="text-sm text-slate-500">Optional: Estimate how many hours this task will take</p>
+            <p className="text-sm text-slate-500">Optional: Estimate how many hours this subtask will take</p>
           </div>
 
           {/* Tags Section */}
@@ -378,7 +429,7 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-blue-600 hover:bg-blue-700">
-              {isSubmitting ? (task ? "Saving..." : "Creating Task...") : (task ? "Save Changes" : "Create Task")}
+              {isSubmitting ? (subtask ? "Saving..." : "Creating Subtask...") : (subtask ? "Save Changes" : "Create Subtask")}
             </Button>
           </div>
         </div>
@@ -387,4 +438,4 @@ const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
   )
 }
 
-export default CreateTaskForm
+export default CreateSubTaskForm

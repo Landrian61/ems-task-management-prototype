@@ -36,7 +36,7 @@ const Sidebar = ({ isOpen, onToggle, activeRoute, setActiveRoute }) => {
     },
     {
       id: 'tasks',
-      label: 'Tasks',
+      label: 'My Tasks',
       icon: CheckSquare,
       permission: 'view_tasks',
       badge: { count: 12, variant: 'default' }

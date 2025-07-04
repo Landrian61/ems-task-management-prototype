@@ -24,7 +24,7 @@ import {
   Line
 } from 'recharts';
 import { CheckSquare, Clock, Users, TrendingUp, AlertTriangle, Calendar, Timer, Target, Play, Pause, Square } from 'lucide-react';
-import CreateTaskForm from '@/components/tasks/CreateTaskForm';
+import CreateTaskForm from '@/components/tasks/CreateSubTaskForm';
 import CreateProjectForm from '@/components/projects/CreateProjectForm';
 import TimeReport from '@/components/tasks/TimeReport';
 import Analytics from '@/components/tasks/Analytics';
@@ -569,59 +569,6 @@ const Dashboard = () => {
           </Card>
         </div>
       )}
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Frequently used actions for faster workflow
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button 
-              variant="outline" 
-              className="h-20 flex-col hover:bg-blue-50 hover:border-blue-200 bg-transparent"
-              onClick={() => setIsNewTaskOpen(true)}
-            >
-              <CheckSquare className="h-6 w-6 mb-2" />
-              <span className="text-sm">New Task</span>
-            </Button>
-
-            {hasPermission('create_projects') && (
-              <Button 
-                variant="outline" 
-                className="h-20 flex-col hover:bg-purple-50 hover:border-purple-200 bg-transparent"
-                onClick={() => setIsNewProjectOpen(true)}
-              >
-                <Users className="h-6 w-6 mb-2" />
-                <span className="text-sm">New Project</span>
-              </Button>
-            )}
-
-            <Button 
-              variant="outline" 
-              className="h-20 flex-col hover:bg-green-50 hover:border-green-200 bg-transparent"
-              onClick={() => setIsTimeReportOpen(true)}
-            >
-              <Clock className="h-6 w-6 mb-2" />
-              <span className="text-sm">Time Report</span>
-            </Button>
-
-            {hasPermission('view_reports') && (
-              <Button 
-                variant="outline" 
-                className="h-20 flex-col hover:bg-orange-50 hover:border-orange-200 bg-transparent"
-                onClick={() => setIsAnalyticsOpen(true)}
-              >
-                <TrendingUp className="h-6 w-6 mb-2" />
-                <span className="text-sm">Analytics</span>
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* New Task Drawer */}
       <Drawer open={isNewTaskOpen} onOpenChange={setIsNewTaskOpen} direction="right">
