@@ -13,8 +13,15 @@ import { cn } from "../../lib/utils"
 import { format } from "date-fns"
 import { CalendarIcon, X, Plus, Tag, Clock, Flag } from "lucide-react"
 
-const CreateTaskForm = ({ onClose, projectId }) => {
-  const [formData, setFormData] = useState({
+const CreateTaskForm = ({ onClose, projectId, task = null, onUpdate }) => {
+  const [formData, setFormData] = useState(task ? {
+    title: task.title || "",
+    description: task.description || "",
+    deadline: task.deadline ? new Date(task.deadline) : null,
+    priority: task.priority || "",
+    estimatedHours: task.estimatedHours || "",
+    tags: task.tags || [],
+  } : {
     title: "",
     description: "",
     deadline: null,
@@ -111,37 +118,39 @@ const CreateTaskForm = ({ onClose, projectId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     if (!validateForm()) {
       return
     }
-
     setIsSubmitting(true)
-
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const taskData = {
-        ...formData,
-        id: Date.now(), // Mock ID
-        status: "todo",
-        trackedHours: 0,
-        projectId: Number.parseInt(projectId),
-        subtasks: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      if (task) {
+        // Edit mode
+        const updatedTask = {
+          ...task,
+          ...formData,
+          deadline: formData.deadline,
+          updatedAt: new Date().toISOString(),
+        }
+        onUpdate && onUpdate(updatedTask)
+        alert("Task updated successfully!")
+      } else {
+        // Create mode
+        const taskData = {
+          ...formData,
+          id: Date.now(),
+          status: "todo",
+          trackedHours: 0,
+          projectId: Number.parseInt(projectId),
+          subtasks: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        console.log("Creating task:", taskData)
+        alert("Task created successfully!")
       }
-
-      console.log("Creating task:", taskData)
-
-      // Show success message (in real app, would use toast notification)
-      alert("Task created successfully!")
-
       onClose()
     } catch (error) {
-      console.error("Error creating task:", error)
-      alert("Error creating task. Please try again.")
+      alert(task ? "Error updating task. Please try again." : "Error creating task. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -151,8 +160,8 @@ const CreateTaskForm = ({ onClose, projectId }) => {
     <div className="h-full flex flex-col">
       <div className="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-8 py-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Create New Task</h2>
-          <p className="text-slate-600 mt-1">Add a new task to your project</p>
+          <h2 className="text-2xl font-bold text-slate-900">{task ? "Edit Task" : "Create New Task"}</h2>
+          <p className="text-slate-600 mt-1">{task ? "Update the details for this task" : "Add a new task to your project"}</p>
         </div>
         <button
           className="text-gray-500 hover:text-gray-700 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
@@ -369,7 +378,7 @@ const CreateTaskForm = ({ onClose, projectId }) => {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-blue-600 hover:bg-blue-700">
-              {isSubmitting ? "Creating Task..." : "Create Task"}
+              {isSubmitting ? (task ? "Saving..." : "Creating Task...") : (task ? "Save Changes" : "Create Task")}
             </Button>
           </div>
         </div>

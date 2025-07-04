@@ -13,8 +13,17 @@ import { cn } from "../../lib/utils"
 import { format } from "date-fns"
 import { CalendarIcon, X, Plus, Tag, Clock, Flag, Users } from "lucide-react"
 
-const CreateSubTaskForm = ({ onClose, parentTask = null }) => {
-  const [formData, setFormData] = useState({
+const CreateSubTaskForm = ({ onClose, parentTask = null, subtask = null, onUpdate }) => {
+  const [formData, setFormData] = useState(subtask ? {
+    title: subtask.title || "",
+    description: subtask.description || "",
+    assignee: subtask.assignee || "",
+    deadline: subtask.deadline ? new Date(subtask.deadline) : null,
+    priority: subtask.priority || "",
+    estimatedHours: subtask.estimatedHours || "",
+    tags: subtask.tags || [],
+    parentTaskId: subtask.parentTaskId || parentTask?.id || null,
+  } : {
     title: "",
     description: "",
     assignee: "",
@@ -125,37 +134,38 @@ const CreateSubTaskForm = ({ onClose, parentTask = null }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     if (!validateForm()) {
       return
     }
-
     setIsSubmitting(true)
-
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const taskData = {
-        ...formData,
-        id: Date.now(), // Mock ID
-        status: "todo",
-        trackedHours: 0,
-        comments: 0,
-        attachments: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      if (subtask) {
+        // Edit mode
+        const updatedSubtask = {
+          ...subtask,
+          ...formData,
+          deadline: formData.deadline,
+          updatedAt: new Date().toISOString(),
+        }
+        onUpdate && onUpdate(updatedSubtask)
+        alert("Subtask updated successfully!")
+      } else {
+        // Create mode
+        const taskData = {
+          ...formData,
+          id: Date.now(),
+          status: "todo",
+          trackedHours: 0,
+          comments: 0,
+          attachments: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        alert("Subtask created successfully!")
       }
-
-      console.log("Creating subtask:", taskData)
-
-      // Show success message (in real app, would use toast notification)
-      alert("Subtask created successfully!")
-
       onClose()
     } catch (error) {
-      console.error("Error creating subtask:", error)
-      alert("Error creating subtask. Please try again.")
+      alert(subtask ? "Error updating subtask. Please try again." : "Error creating subtask. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -165,8 +175,8 @@ const CreateSubTaskForm = ({ onClose, parentTask = null }) => {
     <div className="h-full flex flex-col">
       <div className="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-8 py-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Create New Subtask</h2>
-          <p className="text-slate-600 mt-1">Add a subtask to break down your main task</p>
+          <h2 className="text-2xl font-bold text-slate-900">{subtask ? "Edit Subtask" : "Create New Subtask"}</h2>
+          <p className="text-slate-600 mt-1">{subtask ? "Update the details for this subtask" : "Add a subtask to break down your main task"}</p>
         </div>
         <button
           className="text-gray-500 hover:text-gray-700 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
@@ -419,7 +429,7 @@ const CreateSubTaskForm = ({ onClose, parentTask = null }) => {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-blue-600 hover:bg-blue-700">
-              {isSubmitting ? "Creating Subtask..." : "Create Subtask"}
+              {isSubmitting ? (subtask ? "Saving..." : "Creating Subtask...") : (subtask ? "Save Changes" : "Create Subtask")}
             </Button>
           </div>
         </div>

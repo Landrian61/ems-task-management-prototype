@@ -30,6 +30,7 @@ import { Progress } from "../ui/progress"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 import CreateTaskForm from "../tasks/CreateTaskForm"
 import CreateSubTaskForm from "../tasks/CreateSubTaskForm"
+import TaskDetails from "../tasks/TaskDetails"
 
 const mockProjects = [
   {
@@ -146,13 +147,20 @@ const ProjectDetailPage = ({ projectId, setActiveRoute }) => {
   const [selectedParentTask, setSelectedParentTask] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [viewTask, setViewTask] = useState(null)
+  const [editTask, setEditTask] = useState(null)
+  const [viewSubtask, setViewSubtask] = useState(null)
+  const [editSubtask, setEditSubtask] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState({ type: null, item: null })
+  const [tasks, setTasks] = useState(mockTasks)
 
   const project = mockProjects.find((p) => String(p.id) === String(projectId))
-  const projectTasks = mockTasks.filter((task) => task.projectId === Number.parseInt(projectId))
-  const allSubtasks = mockTasks.flatMap((task) =>
+  const projectTasks = tasks.filter((task) => task.projectId === Number.parseInt(projectId))
+  const allSubtasks = tasks.flatMap((task) =>
     task.subtasks.map((subtask) => ({
       ...subtask,
       parentTask: task.title,
+      parentTaskId: task.id,
     })),
   )
 
@@ -514,9 +522,9 @@ const ProjectDetailPage = ({ projectId, setActiveRoute }) => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
-                            <DropdownMenuItem>Edit Task</DropdownMenuItem>
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Delete Task</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setEditTask(task)}>Edit Task</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setViewTask(task)}>View Details</DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600" onClick={() => setDeleteConfirm({ type: 'task', item: task })}>Delete Task</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -626,9 +634,9 @@ const ProjectDetailPage = ({ projectId, setActiveRoute }) => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem>Edit Subtask</DropdownMenuItem>
-                          <DropdownMenuItem>View Parent Task</DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">Delete Subtask</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setEditSubtask(subtask)}>Edit Subtask</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setViewSubtask(subtask)}>View Subtask</DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600" onClick={() => setDeleteConfirm({ type: 'subtask', item: subtask })}>Delete Subtask</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -675,6 +683,53 @@ const ProjectDetailPage = ({ projectId, setActiveRoute }) => {
                 }}
                 parentTask={selectedParentTask}
               />
+            </div>
+          </div>
+        )}
+
+        {/* Modals for View/Edit/Delete */}
+        {viewTask && (
+          <TaskDetails task={viewTask} isOpen={!!viewTask} onClose={() => setViewTask(null)} />
+        )}
+        {editTask && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[80vh] overflow-hidden">
+              <CreateTaskForm onClose={() => setEditTask(null)} projectId={projectId} task={editTask} onUpdate={(updatedTask) => {
+                setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t))
+                setEditTask(null)
+              }} />
+            </div>
+          </div>
+        )}
+        {viewSubtask && (
+          <TaskDetails task={tasks.find(t => t.id === viewSubtask.parentTaskId)} isOpen={!!viewSubtask} onClose={() => setViewSubtask(null)} />
+        )}
+        {editSubtask && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[80vh] overflow-hidden">
+              <CreateSubTaskForm onClose={() => setEditSubtask(null)} parentTask={tasks.find(t => t.id === editSubtask.parentTaskId)} subtask={editSubtask} onUpdate={(updatedSubtask) => {
+                setTasks(tasks.map(t => t.id === updatedSubtask.parentTaskId ? { ...t, subtasks: t.subtasks.map(st => st.id === updatedSubtask.id ? updatedSubtask : st) } : t))
+                setEditSubtask(null)
+              }} />
+            </div>
+          </div>
+        )}
+        {deleteConfirm.type && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
+              <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
+              <p className="mb-6">Are you sure you want to delete this {deleteConfirm.type === 'task' ? 'task' : 'subtask'}?</p>
+              <div className="flex justify-end gap-4">
+                <Button variant="outline" onClick={() => setDeleteConfirm({ type: null, item: null })}>Cancel</Button>
+                <Button variant="destructive" onClick={() => {
+                  if (deleteConfirm.type === 'task') {
+                    setTasks(tasks.filter(t => t.id !== deleteConfirm.item.id))
+                  } else if (deleteConfirm.type === 'subtask') {
+                    setTasks(tasks.map(t => t.id === deleteConfirm.item.parentTaskId ? { ...t, subtasks: t.subtasks.filter(st => st.id !== deleteConfirm.item.id) } : t))
+                  }
+                  setDeleteConfirm({ type: null, item: null })
+                }}>Delete</Button>
+              </div>
             </div>
           </div>
         )}
