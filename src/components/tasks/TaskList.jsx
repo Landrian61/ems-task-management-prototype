@@ -215,63 +215,63 @@ const EnhancedTaskViews = ({ setActiveRoute }) => {
     return task.estimatedHours > 0 ? Math.min((task.trackedHours / task.estimatedHours) * 100, 100) : 0
   }
 
-  return (
+        return (
     <div className="min-h-screen bg-gray-50">
       {/* Header - Aligned with Kanban boards */}
       <div className="bg-gray-50 px-6 py-4">
         <div className="flex items-center justify-between mb-4">
-          <div>
+                <div>
             <h1 className="text-2xl font-bold text-gray-900">Task Management</h1>
             <p className="text-gray-600 mt-1">
               {sortedTasks.length} tasks • {sortedTasks.filter((t) => t.status === "completed").length} completed
             </p>
-          </div>
-         
+        </div>
+
         </div>
 
         {/* Filters and Search */}
-        <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search tasks..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 w-64 bg-white"
-              />
-            </div>
+          />
+        </div>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-40 bg-white">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="todo">To Do</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="review">Review</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="blocked">Blocked</SelectItem>
-              </SelectContent>
-            </Select>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="todo">To Do</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
+              <SelectItem value="review">Review</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="blocked">Blocked</SelectItem>
+            </SelectContent>
+          </Select>
 
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
               <SelectTrigger className="w-40 bg-white">
                 <Flag className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Priority</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2">
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-40 bg-white">
                 <SortAsc className="h-4 w-4 mr-2" />
@@ -284,9 +284,9 @@ const EnhancedTaskViews = ({ setActiveRoute }) => {
                 <SelectItem value="assignee">Assignee</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </div>
-      </div>
+                          </div>
+                        </div>
+                      </div>
 
       {/* Main Content */}
       <div className="px-6 pb-6">
@@ -297,7 +297,7 @@ const EnhancedTaskViews = ({ setActiveRoute }) => {
             setIsTaskDetailsOpen(true)
           }}
         />
-      </div>
+                    </div>
 
       {/* Task Details Modal */}
       <ViewTaskDetails task={selectedTask} isOpen={isTaskDetailsOpen} onClose={() => setIsTaskDetailsOpen(false)} />
