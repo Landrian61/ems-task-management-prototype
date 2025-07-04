@@ -271,7 +271,7 @@ const EnhancedTaskViews = ({ setActiveRoute }) => {
           </Select>
         </div>
 
-                          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2">
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-40 bg-white">
                 <SortAsc className="h-4 w-4 mr-2" />
@@ -284,9 +284,9 @@ const EnhancedTaskViews = ({ setActiveRoute }) => {
                 <SelectItem value="assignee">Assignee</SelectItem>
               </SelectContent>
             </Select>
-                          </div>
-                        </div>
-                      </div>
+            </div>
+          </div>
+        </div>
 
       {/* Main Content */}
       <div className="px-6 pb-6">
